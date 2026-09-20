@@ -12,7 +12,7 @@
     {
       "name": "fl",
       "source": "./plugins/fl",
-      "description": "Workflow commands: /fl:define (charter or spec), /fl:fix (bug with root cause and regression test), /fl:promote (promote lessons to knowledge/<stack>/patterns/). Install it once; it is independent of the stack.",
+      "description": "Workflow commands: /fl:define (charter, spec or shared spec across repos), /fl:fix (bug with root cause and regression test), /fl:promote (promote lessons to knowledge/<stack>/patterns/), /fl:import (split an existing all-in-one spec into a multi-repo project without losing text). Install it once; it is independent of the stack.",
       "category": "workflow"
     },
     {

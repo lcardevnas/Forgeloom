@@ -2,7 +2,7 @@
   "name": "fl",
   "displayName": "Forgeloom",
   "version": "0.1.0",
-  "description": "Forgeloom workflow commands: /fl:define (charter or spec), /fl:fix (bug with root cause and regression test) and /fl:promote (promote a lesson to knowledge/<stack>/patterns/).",
+  "description": "Forgeloom workflow commands: /fl:define (charter, spec, or shared spec across repos), /fl:fix (bug with root cause and regression test), /fl:promote (promote a lesson to knowledge/<stack>/patterns/) and /fl:import (split an existing all-in-one spec into a multi-repo project without losing any text).",
   "author": {
     "name": "Luis Cárdenas",
     "url": "https://github.com/lcardevnas"
