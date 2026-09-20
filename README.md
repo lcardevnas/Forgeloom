@@ -12,11 +12,13 @@ What you write once, in `knowledge/`, every project of that stack inherits. What
 ## Contents
 
 - [Install](#install)
+- [Multi-repo projects](#multi-repo-projects)
 - [Use case 1 — Bootstrap a new project](#use-case-1--bootstrap-a-new-project)
 - [Use case 2 — A feature on an existing project](#use-case-2--a-feature-on-an-existing-project)
 - [Use case 3 — A bug](#use-case-3--a-bug)
 - [Use case 4 — From a chat, without Claude Code](#use-case-4--from-a-chat-without-claude-code)
-- [Use case 5 — Equivalent in each adapter](#use-case-5--equivalent-in-each-adapter)
+- [Use case 5 — Split an existing all-in-one spec](#use-case-5--split-an-existing-all-in-one-spec)
+- [Use case 6 — Equivalent in each adapter](#use-case-6--equivalent-in-each-adapter)
 - [What each plugin gives you](#what-each-plugin-gives-you)
 - [Repository layout](#repository-layout)
 - [Known limits](#known-limits)
@@ -33,7 +35,7 @@ claude plugin marketplace add lcardevnas/Forgeloom
 
 Or, inside Claude Code: `/plugin marketplace add lcardevnas/Forgeloom` (the repository is <https://github.com/lcardevnas/Forgeloom>).
 
-Install the stack plugin for your project. It declares the `fl` plugin as a dependency, so `fl` (the commands `/fl:define`, `/fl:fix`, `/fl:promote`) is installed with it automatically:
+Install the stack plugin for your project. It declares the `fl` plugin as a dependency, so `fl` (the commands `/fl:define`, `/fl:fix`, `/fl:promote`, `/fl:import`) is installed with it automatically:
 
 ```bash
 claude plugin install ios-swift@forgeloom --scope project   # or: web, backend
@@ -45,7 +47,7 @@ All four are available:
 
 | Plugin | Gives you |
 |---|---|
-| `fl` | The commands `/fl:define`, `/fl:fix`, `/fl:promote`. Independent of the stack, so the command names never change with the stack you install. |
+| `fl` | The commands `/fl:define`, `/fl:fix`, `/fl:promote`, `/fl:import` and the script that verifies an import. Independent of the stack, so the command names never change with the stack you install. |
 | `ios-swift` | (installs `fl` too) 7 skills, 4 audit subagents, 3 shared subagents, the commit gate. |
 | `web` | (installs `fl` too) 4 skills (with 4 design themes), 4 audit subagents, 3 shared subagents, the commit gate. |
 | `backend` | (installs `fl` too) 4 skills, 2 audit subagents, 3 shared subagents, the commit gate. |
@@ -53,6 +55,33 @@ All four are available:
 Use `--scope project` for the stack plugin so your team gets it through the project's `.claude/settings.json`. Install **one stack plugin per repo**: the shared subagents and the gate are bundled in each stack plugin, so installing several in the same project duplicates them (see [Known limits](#known-limits)).
 
 Verify: run `/fl:define` in Claude Code. Commands always carry the plugin name (`/fl:...`), whatever stack plugin is installed next to it.
+
+## Multi-repo projects
+
+A Forgeloom project is **one repo per stack plus a contracts repo**, side by side in an umbrella folder. Each coding session is opened in **one** repo, so it loads only that stack's context.
+
+```text
+acme-product/                 # umbrella folder (not a repo)
+├── acme-ios/                 # stack ios-swift: AGENTS.md, decisions/, specs/, docs/
+├── acme-backend/             # stack backend:   AGENTS.md, decisions/, specs/, docs/
+└── acme-contracts/           # openapi.yaml, specs/ (shared between platforms), decisions/, design/
+```
+
+| What | Where |
+|---|---|
+| Stack, hosting, architecture and commands of a platform | that repo's `AGENTS.md` (under 200 lines), with the reasons in its `decisions/` |
+| A feature that needs one repo | that repo's `specs/<feature>.md` |
+| A feature that needs more than one repo | `<contracts>/specs/<feature>.md`, with the acceptance criteria grouped per platform (`### iOS`, `### Backend`) |
+| The API contract | `<contracts>/openapi.yaml`, contract-first: it changes before the endpoint exists |
+| Reference material that is not a decision, a feature or a convention (data model, animation catalog, settings inventory) | `<repo>/docs/<topic>.md`, linked from `AGENTS.md` |
+| Where the contracts repo and the sibling repos are | the *Related repositories* section of each repo's `AGENTS.md` |
+
+**When a feature needs work in another repo.** Sessions do not command each other: the contracts repo is the handoff and you carry it.
+
+1. In the session where the need appears (say iOS), `/fl:define <feature>` notices that the feature needs more than one repo. It writes the shared spec in the contracts repo and proposes the `openapi.yaml` change, which it applies only after your OK. Writing outside the repo needs the sibling folder added: `claude --add-dir ../acme-contracts`. Without it the command stops and tells you.
+2. It ends by giving you the first prompt for each repo. In a session opened in the backend repo: `Implement according to ../acme-contracts/specs/<feature>.md, Backend section only`. From there it is the usual feature flow: plan mode, implementation, `contract-compliance-checker` against `openapi.yaml`.
+3. Each session works only on its own group and never edits the other repo. The feature is done when **every** group is done.
+4. If a session only finds out mid-implementation that it needs something from another repo, the `cross-repo-work` rule in each stack's `AGENTS.md` makes it stop at the boundary and route through the contracts repo, instead of inventing the contract or editing the other repo.
 
 ## Use case 1 — Bootstrap a new project
 
@@ -66,7 +95,7 @@ You are starting from zero. The first thing that comes out of the definition cha
 
 `/fl:define` detects that `AGENTS.md` does not exist, talks the foundation through with you, and then writes:
 
-- `AGENTS.md` — Technical stack, Hosting/infrastructure, General architecture, Planned commands. Only what was explicitly decided.
+- `AGENTS.md` — Technical stack, Hosting/infrastructure, General architecture, Planned commands and, if the project spans several repos, Related repositories (where the contracts repo and the sibling repos are). Only what was explicitly decided.
 - `decisions/0001-foundation.md` — an ADR: what was chosen, the alternatives if any were mentioned, and why.
 
 Anything left undecided is marked as an **open question** instead of assumed. Review those first. Nothing is committed for you.
@@ -85,7 +114,7 @@ The stack and architecture are already fixed in `AGENTS.md`; only the spec of th
    /fl:define feature-name
    ```
 
-   It detects the existing `AGENTS.md`, grounds its questions in the real code, and writes `specs/feature-name.md`: Objective, Scope (including what is explicitly out), Constraints, Acceptance criteria (a verifiable checklist) and Relevant prior decisions. Open questions are marked, not assumed.
+   It detects the existing `AGENTS.md`, grounds its questions in the real code, and writes `specs/feature-name.md`: Objective, Scope (including what is explicitly out), Constraints, Acceptance criteria (a verifiable checklist) and Relevant prior decisions. Open questions are marked, not assumed. If the feature needs more than one repo, the spec goes in the contracts repo instead, with the criteria grouped per platform: see [Multi-repo projects](#multi-repo-projects).
 
 2. **Plan before code.** Open the tool in the repo (not in a parent folder) and start with:
 
@@ -140,6 +169,7 @@ Thinking happens in a chat; the mistake is not starting there, it is jumping fro
    | A brand-new project | `prompts/chat-to-charter.md` | `AGENTS.md` and `decisions/0001-foundation.md` at the repo root |
    | A feature on an existing project | `prompts/chat-to-spec.md` | `specs/<feature>.md` |
    | A bug | `prompts/chat-to-bug.md` | `bugs/<id>.md` (or keep it in the prompt) |
+   | A definition that already exists as one big file | `prompts/import-spec.md` | see [Use case 5](#use-case-5--split-an-existing-all-in-one-spec) |
 
    The last sentence of each prompt is the one that matters: it stops the model from filling gaps with plausible assumptions you never made.
 3. Review the **open questions** first.
@@ -149,7 +179,33 @@ For a **feature on an existing project**, defining inside the coding tool is a r
 
 To use the stack knowledge from a tool that is not Claude Code, run the installer (below).
 
-## Use case 5 — Equivalent in each adapter
+## Use case 5 — Split an existing all-in-one spec
+
+You already have the whole definition as one big Markdown file (features, architecture, API contracts, configuration, built over many chat iterations) and you must not lose any of it. `chat-to-*` and `/fl:define` write *from what was discussed*, which can summarize; this flow **moves existing text** and proves that it kept all of it. It needs the [multi-repo layout](#multi-repo-projects).
+
+Put the source file in the umbrella folder, next to the repos. Open Claude Code inside a repo with the umbrella added, and run the same command in each repo, one at a time:
+
+```bash
+cd acme-product/acme-ios && claude --add-dir ..
+```
+
+```text
+/fl:import ../source-spec.md
+```
+
+1. **Map (first run).** It writes `import-map.md` in the umbrella folder: every block of source lines with its destination repo, file and treatment (`verbatim`, `openapi`, or `dropped` with a reason). Rows left out and open questions are listed for you to review, and **nothing is written in any repo until you approve the map**. `import-check.sh --map-only` proves that every non-blank source line is accounted for and that the source has not changed since.
+2. **Import (once per repo).** Each run writes only that repo's rows: `AGENTS.md` (with *Related repositories* and links to `docs/`), `decisions/`, `specs/` and `docs/`; in the contracts repo, the shared specs and `openapi.yaml`. Text moves word for word. What the layout needs and the source does not say is marked `Open question: not specified in the source spec`, never filled in. If two iterations of the source contradict each other, **both are kept and marked**, not reconciled. Existing files are never overwritten.
+3. **Verify.** After each repo the command runs `import-check.sh --repo <repo>`: every line of every row of that repo must be in its destination file, word for word. At the end, `/fl:import --check` verifies all repos at once and runs an OpenAPI structural lint on `openapi.yaml` (`redocly lint --extends minimal`; install it with `npm install -g @redocly/cli`; the check fails on purpose if it is not found).
+
+Nothing is committed and the source file stays where it is. Review the open questions first.
+
+Without Claude Code: paste `prompts/import-spec.md`, then run the script yourself. It needs only `bash`, `awk` and `shasum` or `sha256sum`:
+
+```bash
+bash /path/to/forgeloom/plugins/fl/scripts/import-check.sh ../import-map.md --repo acme-ios
+```
+
+## Use case 6 — Equivalent in each adapter
 
 | Step | Claude Code | Codex | Cursor / others |
 |---|---|---|---|
@@ -157,6 +213,7 @@ To use the stack knowledge from a tool that is not Claude Code, run the installe
 | New-project charter | `/fl:define` | paste `prompts/chat-to-charter.md` | paste `prompts/chat-to-charter.md` |
 | Feature spec | `/fl:define feature-name` | paste `prompts/chat-to-spec.md` | paste `prompts/chat-to-spec.md` |
 | Bug | `/fl:fix "..."` | paste `prompts/chat-to-bug.md`, then ask for root cause before any fix, a red test, then a minimal fix | same as Codex |
+| Split an existing all-in-one spec | `/fl:import <source.md>` | paste `prompts/import-spec.md`, then run `plugins/fl/scripts/import-check.sh` yourself | same as Codex |
 | Reviewer / test-writer | subagents (`code-reviewer`, `test-writer`) | a second session: "review this diff against `specs/<feature>.md` and the checklists in `AGENTS.md`" | same as Codex |
 | Commit gate | plugin hook | `git` pre-commit hook (below) | `git` pre-commit hook (below) |
 | Promote a lesson | `/fl:promote` | write `knowledge/<stack>/patterns/<slug>.md` by hand from `templates/pattern.md`, commit | same as Codex |
@@ -226,15 +283,15 @@ forgeloom/
 │   ├── skills/dependency-scan/
 │   └── hooks/                        # hooks.json, pre-commit-gate.sh, secret-scan.sh, dependency-scan.sh
 ├── plugins/
-│   ├── fl/                           # commands only: define, fix, promote
+│   ├── fl/                           # commands (define, fix, promote, import) + scripts/import-check.sh
 │   ├── ios-swift/  web/  backend/    # per-stack skills + subagents; shared pieces symlinked from common/
 ├── prompts/                          # closing prompts for chat
-├── templates/                        # adr.md, pattern.md
+├── templates/                        # adr.md, pattern.md, import-map.md
 ├── adapters/                         # cursor/, codex/
 └── install.sh                        # generic installer
 ```
 
-In each stack plugin, the shared subagents are **individual symlinks** into `common/agents/` (never the whole folder, because each stack also has real agents of its own), `hooks` links to `common/hooks`, and `knowledge` links to that stack's core. The `fl` commands live only in `plugins/fl/`, with `name: "fl"`, so `/fl:define` is identical whichever stack plugin is installed.
+In each stack plugin, the shared subagents are **individual symlinks** into `common/agents/` (never the whole folder, because each stack also has real agents of its own), `hooks` links to `common/hooks`, and `knowledge` links to that stack's core. The `fl` commands live only in `plugins/fl/`, with `name: "fl"`, so `/fl:define` is identical whichever stack plugin is installed. `import-check.sh` lives there too, as a real file, next to the command that uses it.
 
 ## Known limits
 
@@ -246,6 +303,10 @@ Behaviors that were verified against a real install and are worth knowing:
 - **The gate only sees commits Claude Code runs.** A commit you type by hand in your terminal does not trigger a Claude Code hook; use the git `pre-commit` install above for that.
 - **`dependency-scan` checks what a commit adds or changes.** With no lockfile it queries the lower bound of the declared range; `Package.swift` dependencies are read only when on a single line; other package managers (`yarn.lock`, `pnpm-lock.yaml`, `poetry.lock`, ...) produce a warning, not a check. It needs network access.
 - **`/fl:promote` needs a real forgeloom checkout** to write into (it never writes into the plugin cache). It looks for `$FORGELOOM_DIR`, then the current directory, then a local marketplace entry, and otherwise asks you.
+- **`/fl:import` proves the text is there, not that it is in the right place.** `import-check.sh` verifies, line by line and word for word, that everything in the map reached its destination file, and that no source line was left out. It cannot tell whether a line sits under the right heading of that file, whether a feature was assigned to the right repo, or whether a `dropped` row really was not project content: that is what the map review and the open-questions list are for. It ignores indentation, heading levels, list and checkbox markers, so text can move under other headings; reworded text fails.
+- **`/fl:import` needs the umbrella folder reachable.** The source and the map live outside the repo, so start the session with `claude --add-dir ..` (or the umbrella's path). Without it the command stops and says so; it does not copy the source into a repo. The same applies to `/fl:define` writing a shared spec in a sibling contracts repo.
+- **The OpenAPI conversion keeps the source text but does not fill gaps.** Each operation carries its source lines verbatim in `description`; types, required fields, status codes and auth that the source never states are left empty and marked `x-open-question`. The result is a skeleton the contract review must complete, not a finished contract. The lint checks structure (valid YAML and OpenAPI, no dangling `$ref`), not style completeness: Redocly's `recommended` rules (servers, security, summaries, operationIds) would demand facts the source never states, so they are off by default; set `FL_IMPORT_LINT_CMD` for a stricter ruleset. The linter is required and is not bundled.
+- **Sessions do not talk to each other.** A session that needs work in another repo leaves it in the contracts repo (shared spec and `openapi.yaml`) and you start the other repo's session. This is deliberate: it works the same in Codex and Cursor, and no session directs another unseen.
 - **Theme palettes are AA-checked, and the dark theme has a gradient limit.** Each theme's colors were adjusted so the listed pairs reach 4.5:1 as normal text (for example the terracotta accent on the editorial background, or the mustard accent on cream); every pair is measured in the theme file, next to the value it replaced. Text cannot sit directly over the dark theme's full violet→cyan gradient, because no single text color passes on both ends.
 
 ## License
