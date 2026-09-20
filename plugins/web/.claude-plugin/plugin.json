@@ -1,7 +1,7 @@
 {
   "name": "web",
   "displayName": "Forgeloom · Web",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Skills and audit subagents for web projects: professional design with 4 themes, Core Web Vitals, technical SEO and WCAG 2.2 accessibility; OWASP Top 10, Core Web Vitals, accessibility and design-system compliance reviews; secrets and dependency gate.",
   "author": {
     "name": "Luis Cárdenas",
