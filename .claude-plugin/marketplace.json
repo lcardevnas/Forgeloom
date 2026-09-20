@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Forgeloom: spec-driven workflow and reusable per-stack knowledge (iOS/Swift, web, backend) for AI-assisted development.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
