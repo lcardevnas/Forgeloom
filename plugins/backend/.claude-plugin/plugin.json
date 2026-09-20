@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "displayName": "Forgeloom · Backend",
+  "version": "0.1.0",
+  "description": "Skills and audit subagents for backends, language-agnostic: contract-first APIs, database design, auth patterns and observability; OWASP API Security and OpenAPI contract compliance reviews; secrets and dependency gate.",
+  "author": {
+    "name": "Luis Cárdenas",
+    "url": "https://github.com/lcardevnas"
+  },
+  "homepage": "https://github.com/lcardevnas/Forgeloom",
+  "repository": "https://github.com/lcardevnas/Forgeloom",
+  "license": "MIT",
+  "keywords": [
+    "forgeloom",
+    "backend",
+    "api",
+    "openapi",
+    "owasp-api"
+  ],
+  "dependencies": [
+    "fl"
+  ]
+}

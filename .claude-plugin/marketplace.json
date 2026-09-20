@@ -1,0 +1,37 @@
+{
+  "name": "forgeloom",
+  "owner": {
+    "name": "Luis Cárdenas",
+    "url": "https://github.com/lcardevnas"
+  },
+  "metadata": {
+    "description": "Forgeloom: spec-driven workflow and reusable per-stack knowledge (iOS/Swift, web, backend) for AI-assisted development.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "fl",
+      "source": "./plugins/fl",
+      "description": "Workflow commands: /fl:define (charter or spec), /fl:fix (bug with root cause and regression test), /fl:promote (promote lessons to knowledge/<stack>/patterns/). Install it once; it is independent of the stack.",
+      "category": "workflow"
+    },
+    {
+      "name": "ios-swift",
+      "source": "./plugins/ios-swift",
+      "description": "Skills and subagents for iOS/macOS in Swift: Swift standards, Swift 6 concurrency, SwiftUI, Swift Testing, SwiftData, networking, privacy manifest; OWASP Mobile, accessibility, memory and performance audits.",
+      "category": "development"
+    },
+    {
+      "name": "web",
+      "source": "./plugins/web",
+      "description": "Skills and subagents for web: professional design with 4 themes, Core Web Vitals, technical SEO, WCAG 2.2 accessibility; OWASP Top 10, Core Web Vitals, accessibility and design-system compliance audits.",
+      "category": "development"
+    },
+    {
+      "name": "backend",
+      "source": "./plugins/backend",
+      "description": "Skills and subagents for backend (language-agnostic): contract-first API, database, auth, observability; OWASP API Security and OpenAPI contract compliance audits.",
+      "category": "development"
+    }
+  ]
+}

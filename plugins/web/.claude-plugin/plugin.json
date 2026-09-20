@@ -1,0 +1,24 @@
+{
+  "name": "web",
+  "displayName": "Forgeloom · Web",
+  "version": "0.1.0",
+  "description": "Skills and audit subagents for web projects: professional design with 4 themes, Core Web Vitals, technical SEO and WCAG 2.2 accessibility; OWASP Top 10, Core Web Vitals, accessibility and design-system compliance reviews; secrets and dependency gate.",
+  "author": {
+    "name": "Luis Cárdenas",
+    "url": "https://github.com/lcardevnas"
+  },
+  "homepage": "https://github.com/lcardevnas/Forgeloom",
+  "repository": "https://github.com/lcardevnas/Forgeloom",
+  "license": "MIT",
+  "keywords": [
+    "forgeloom",
+    "web",
+    "design-system",
+    "core-web-vitals",
+    "wcag",
+    "owasp"
+  ],
+  "dependencies": [
+    "fl"
+  ]
+}
