@@ -74,3 +74,5 @@ Reading rules:
 ## Cross-cutting
 
 `dependency-scan`: before adding a new dependency (npm, PyPI, Go, Cargo or whichever manager the backend uses), check for known unpatched CVEs and prefer the latest stable version instead of pinning an old one without reviewing pending security fixes. The gate is enforced by the hook in `common/hooks/` (it blocks); this rule informs the choice. **Never** add a new dependency for something trivial that 10 lines of your own code can solve without raising the alternative first.
+
+`cross-repo-work`: when a change affects other repos (a client that consumes the endpoint), update the contract in the contracts repo first (see *Related repositories* in this project's `AGENTS.md`) and add or extend the group for that client in the shared spec `<contracts>/specs/<feature>.md`, each applied only after the user's OK. An incompatible change to a published contract needs a new version. **Never** edit a client repo from a backend session: the user starts that repo's session with the spec as its prompt.
