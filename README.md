@@ -48,7 +48,7 @@ All four are available:
 
 | Plugin | Gives you |
 |---|---|
-| `fl` | The commands `/fl:define`, `/fl:fix`, `/fl:promote`, `/fl:import` and the script that verifies an import. Independent of the stack, so the command names never change with the stack you install. |
+| `fl` | The commands `/fl:define`, `/fl:fix`, `/fl:promote`, `/fl:import` and the scripts that check a source spec and verify an import. Independent of the stack, so the command names never change with the stack you install. |
 | `ios-swift` | (installs `fl` too) 7 skills, 4 audit subagents, 3 shared subagents, the commit gate. |
 | `web` | (installs `fl` too) 4 skills (with 4 design themes), 4 audit subagents, 3 shared subagents, the commit gate. |
 | `backend` | (installs `fl` too) 4 skills, 2 audit subagents, 3 shared subagents, the commit gate. |
@@ -175,6 +175,7 @@ Thinking happens in a chat; the mistake is not starting there, it is jumping fro
    | A feature on an existing project | `prompts/chat-to-spec.md` | `specs/<feature>.md` |
    | A bug | `prompts/chat-to-bug.md` | `bugs/<id>.md` (or keep it in the prompt) |
    | A definition that already exists as one big file | `prompts/import-spec.md` | see [Use case 5](#use-case-5--split-an-existing-all-in-one-spec) |
+   | A brand-new product you will split into repos with `/fl:import` | `prompts/chat-to-source-spec.md`, pasted as the **first** message | `source-spec.md`, see [Defining the source in a chat](#defining-the-source-in-a-chat) |
 
    The last sentence of each prompt is the one that matters: it stops the model from filling gaps with plausible assumptions you never made.
 3. Review the **open questions** first.
@@ -212,6 +213,25 @@ Without Claude Code: paste `prompts/import-spec.md`, then run the script yoursel
 bash /path/to/forgeloom/plugins/fl/scripts/import-check.sh ../import-map.md --repo AcmeProductAppleApp
 ```
 
+### Defining the source in a chat
+
+Import can only move text: if the chat never produced acceptance criteria, scope or constraints, they arrive as `Open question: not specified in the source spec`. So the quality of an import is decided when the source is written. The `chat-to-*` prompts are closing prompts (they summarize what was discussed), which cannot ask for what nobody mentioned. For a new product, use the opening prompt instead: paste `prompts/chat-to-source-spec.md` as the **first** message of the chat.
+
+It runs the conversation in stages, each ending with a gate: project (name, problem, users, non-goals, global constraints), platforms, the foundation of each platform, a feature inventory (names only), each feature in full, contracts derived from the features, cross-platform decisions, an audit, and a single render. Four things make the result importable:
+
+- **Sections are printed and frozen as they are confirmed**, so nothing depends on the model remembering a long chat, and a correction replaces text instead of appending a contradiction.
+- **A feature is not closed** until it has an objective, scope with an explicit `Out of scope:`, constraints and, for every platform it involves, at least one checkable criterion. The assistant proposes criteria (including failure, empty and offline cases) and you confirm them; nobody writes them from a blank page.
+- **Unknown is written down**: `Open question: <what is missing>`, never an empty part or a plausible default.
+- **The document holds the current state only** (no history, no "as we discussed"), in the exact order and headings `/fl:import` routes.
+
+Save the result as `source-spec.md` in the umbrella folder and check its shape before importing:
+
+```bash
+bash /path/to/forgeloom/plugins/fl/scripts/source-check.sh source-spec.md
+```
+
+A `FAIL` is a required part the chat never produced (a feature with no `Out of scope:`, a platform without acceptance criteria, a platform that is in but has no foundation, a duplicated feature); a `WARN` is something likely wrong (a section `/fl:import` will not know where to put, chat language). Declared open questions are listed at the end. `/fl:import` runs the same check by itself when the source has this shape and shows what failed, but never edits the source.
+
 ## Use case 6 — Equivalent in each adapter
 
 | Step | Claude Code | Codex | Cursor / others |
@@ -220,6 +240,7 @@ bash /path/to/forgeloom/plugins/fl/scripts/import-check.sh ../import-map.md --re
 | New-project charter | `/fl:define` | paste `prompts/chat-to-charter.md` | paste `prompts/chat-to-charter.md` |
 | Feature spec | `/fl:define feature-name` | paste `prompts/chat-to-spec.md` | paste `prompts/chat-to-spec.md` |
 | Bug | `/fl:fix "..."` | paste `prompts/chat-to-bug.md`, then ask for root cause before any fix, a red test, then a minimal fix | same as Codex |
+| Define a new product as an import-ready source spec | paste `prompts/chat-to-source-spec.md` as the first message of a chat, then `source-check.sh` | same as Claude Code | same as Claude Code |
 | Split an existing all-in-one spec (creates the repos) | `/fl:import <source.md>` | paste `prompts/import-spec.md`, then run `plugins/fl/scripts/import-check.sh` yourself | same as Codex |
 | Reviewer / test-writer | subagents (`code-reviewer`, `test-writer`) | a second session: "review this diff against `specs/<feature>.md` and the checklists in `AGENTS.md`" | same as Codex |
 | Commit gate | plugin hook | `git` pre-commit hook (below) | `git` pre-commit hook (below) |
@@ -303,15 +324,15 @@ forgeloom/
 │   ├── skills/dependency-scan/
 │   └── hooks/                        # hooks.json, pre-commit-gate.sh, secret-scan.sh, dependency-scan.sh
 ├── plugins/
-│   ├── fl/                           # commands (define, fix, promote, import) + scripts/import-check.sh
+│   ├── fl/                           # commands (define, fix, promote, import) + scripts/{import-check,source-check}.sh
 │   ├── ios-swift/  web/  backend/    # per-stack skills + subagents; shared pieces symlinked from common/
-├── prompts/                          # closing prompts for chat
+├── prompts/                          # prompts for chat: closing prompts, plus the opening chat-to-source-spec
 ├── templates/                        # adr.md, pattern.md, import-map.md
 ├── adapters/                         # cursor/, codex/
 └── install.sh                        # generic installer
 ```
 
-In each stack plugin, the shared subagents are **individual symlinks** into `common/agents/` (never the whole folder, because each stack also has real agents of its own), `hooks` links to `common/hooks`, and `knowledge` links to that stack's core. The `fl` commands live only in `plugins/fl/`, with `name: "fl"`, so `/fl:define` is identical whichever stack plugin is installed. `import-check.sh` lives there too, as a real file, next to the command that uses it.
+In each stack plugin, the shared subagents are **individual symlinks** into `common/agents/` (never the whole folder, because each stack also has real agents of its own), `hooks` links to `common/hooks`, and `knowledge` links to that stack's core. The `fl` commands live only in `plugins/fl/`, with `name: "fl"`, so `/fl:define` is identical whichever stack plugin is installed. `import-check.sh` and `source-check.sh` live there too, as real files, next to the command that uses them.
 
 ## Known limits
 
@@ -324,6 +345,7 @@ Behaviors that were verified against a real install and are worth knowing:
 - **`dependency-scan` checks what a commit adds or changes.** With no lockfile it queries the lower bound of the declared range; `Package.swift` dependencies are read only when on a single line; other package managers (`yarn.lock`, `pnpm-lock.yaml`, `poetry.lock`, ...) produce a warning, not a check. It needs network access.
 - **`/fl:promote` needs a real forgeloom checkout** to write into (it never writes into the plugin cache). It looks for `$FORGELOOM_DIR`, then the current directory, then a local marketplace entry, and otherwise asks you.
 - **`/fl:import` proves the text is there, not that it is in the right place.** `import-check.sh` verifies, line by line and word for word, that everything in the map reached its destination file, and that no source line was left out. It cannot tell whether a line sits under the right heading of that file, whether a feature was assigned to the right repo, or whether a `dropped` row really was not project content: that is what the map review and the open-questions list are for. It ignores indentation, heading levels, list and checkbox markers, so text can move under other headings; reworded text fails.
+- **`source-check.sh` checks shape, not quality, and the interview is not proven.** It confirms the required parts exist and are not empty (a declared `Open question:` counts as filled), that platform names agree across sections and that no feature is duplicated. It cannot tell a weak acceptance criterion from a good one, and the assistant can still drift in a long chat: the frozen sections and the audit stage reduce that, they do not remove it. The check reads only the format of `prompts/chat-to-source-spec.md`; a spec in any other shape is imported as before and is not checked.
 - **`/fl:import` runs from the umbrella folder.** The source and the map live there, and the repos are created inside it, so no `--add-dir` is needed. If you run it from inside one repo instead, start the session with `claude --add-dir ..`; the command never copies the source into a repo. `/fl:define` writing a shared spec in a sibling contracts repo still needs the sibling folder added.
 - **`/fl:import` decides the repos from the spec.** Technologies and the `Contracts` repo are inferred from what the source says, and you approve them before anything is created. Two projects of the same technology (two backends) and technologies outside the naming table are asked, not guessed. `AndroidApp` gets a folder but has no Forgeloom stack yet.
 - **The English rule and word-for-word import can collide.** A non-English source stays as written (translating would fail the check); the command reports it and leaves the translation to you.
