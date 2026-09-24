@@ -26,7 +26,7 @@ What you write once, in `knowledge/`, every project of that stack inherits. What
 
 ## Install
 
-**Requirements**: Claude Code, and for the commit gate `bash`, `git`, `curl` and `jq`, plus network access to [OSV.dev](https://osv.dev), the free, open vulnerability database that the dependency check queries (no API key needed; it covers every package manager the check supports).
+**Requirements**: Claude Code, and for the commit gate `bash`, `git`, `curl` and `jq`, plus network access to [OSV.dev](https://osv.dev), the free, open vulnerability database that the dependency check queries (no API key needed; it covers every package manager the check supports). The scripts of `professional-apple-ui` need Python 3 (included with Xcode's Command Line Tools).
 
 Add the marketplace once (a local checkout works too: `claude plugin marketplace add /path/to/forgeloom`):
 
@@ -49,7 +49,7 @@ All four are available:
 | Plugin | Gives you |
 |---|---|
 | `fl` | The commands `/fl:define`, `/fl:fix`, `/fl:promote`, `/fl:import` and the scripts that check a source spec and verify an import. Independent of the stack, so the command names never change with the stack you install. |
-| `ios-swift` | (installs `fl` too) 7 skills, 4 audit subagents, 3 shared subagents, the commit gate. |
+| `ios-swift` | (installs `fl` too) 8 skills (with 10 UI styles), 4 audit subagents, 3 shared subagents, the commit gate. |
 | `web` | (installs `fl` too) 4 skills (with 4 design themes), 4 audit subagents, 3 shared subagents, the commit gate. |
 | `backend` | (installs `fl` too) 4 skills, 2 audit subagents, 3 shared subagents, the commit gate. |
 
@@ -283,7 +283,7 @@ Every stack plugin also ships three shared subagents (`code-reviewer`, `test-wri
 
 | Stack | Skills | Audit subagents |
 |---|---|---|
-| `ios-swift` | `swift-high-standard`, `swift6-concurrency`, `modern-swiftui`, `swift-testing`, `swiftdata-persistence`, `networking-async-await`, `privacy-manifest` | `security-review-owasp-mobile`, `accessibility-review-ios`, `memory-review-ios`, `performance-review-ios` |
+| `ios-swift` | `swift-high-standard`, `swift6-concurrency`, `modern-swiftui`, `professional-apple-ui` (10 styles), `swift-testing`, `swiftdata-persistence`, `networking-async-await`, `privacy-manifest` | `security-review-owasp-mobile`, `accessibility-review-ios`, `memory-review-ios`, `performance-review-ios` |
 | `web` | `professional-web-design` (4 themes), `core-web-vitals`, `technical-seo`, `web-accessibility` | `security-review-owasp-web`, `core-web-vitals-audit`, `accessibility-audit-web`, `design-system-compliance` |
 | `backend` | `api-design-contract-first`, `database-design`, `auth-patterns`, `observability-logging` | `api-security-review-owasp`, `contract-compliance-checker` |
 
@@ -298,6 +298,8 @@ Each subagent runs on the model that fits its job: Opus only where a false negat
 | Haiku | `explorer`, `design-system-compliance` (low), `contract-compliance-checker` (low), `dependency-scan` (low, a skill) |
 
 **Web design themes.** `professional-web-design` has you pick one of four themes and apply it across the whole site, never mixing them: minimalist editorial, dark tech / SaaS, warm artisanal, corporate fintech. Palette, typography and motion for each are in `knowledge/web/design-system/themes/`. The `design-system-compliance` subagent checks that new code uses the theme's tokens.
+
+**Apple UI styles.** `professional-apple-ui` gives macOS and iOS apps one soft, card-based look on a native shell, from one of ten styles (Mint Studio, Sky Harbor, Lavender Loft, Peach Bakery, Sage Garden, Butter Sun, Blush Petal, Aqua Pool, Terracotta Clay, Indigo Ink) or a custom one built from a brand color. The user picks the style in a gallery that shows each one in light and dark. The style is recorded once per project, and `Theme.swift` is generated from it. Every screen then goes through a design brief, an HTML mockup the user approves before any SwiftUI, and a screenshot tour reviewed in light and dark against a checklist. The skill bundles the scripts for this (style builder with a contrast check, theme generator, mockup starter) and templates for shared components, appearance, localization and the screenshot tour. Tokens, measured contrast and the platform rules are in `knowledge/ios-swift/design-system/`.
 
 **The commit gate** (`common/hooks/`) runs before every `git commit` that Claude Code performs, and blocks it when:
 
@@ -316,7 +318,7 @@ Each subagent runs on the model that fits its job: Opus only where a false negat
 forgeloom/
 ├── .claude-plugin/marketplace.json   # catalog: fl, ios-swift, web, backend
 ├── knowledge/                        # the agnostic core: plain Markdown
-│   ├── ios-swift/  { AGENTS.md, patterns/ }
+│   ├── ios-swift/  { AGENTS.md, design-system/{styles/}, patterns/ }
 │   ├── web/        { AGENTS.md, design-system/themes/, patterns/ }
 │   └── backend/    { AGENTS.md, patterns/ }
 ├── common/                           # shared across all stacks
@@ -353,6 +355,8 @@ Behaviors that were verified against a real install and are worth knowing:
 - **The OpenAPI conversion keeps the source text but does not fill gaps.** Each operation carries its source lines verbatim in `description`; types, required fields, status codes and auth that the source never states are left empty and marked `x-open-question`. The result is a skeleton the contract review must complete, not a finished contract. The lint checks structure (valid YAML and OpenAPI, no dangling `$ref`), not style completeness: Redocly's `recommended` rules (servers, security, summaries, operationIds) would demand facts the source never states, so they are off by default; set `FL_IMPORT_LINT_CMD` for a stricter ruleset. The linter is required and is not bundled.
 - **Sessions do not talk to each other.** A session that needs work in another repo leaves it in the contracts repo (shared spec and `openapi.yaml`) and you start the other repo's session. This is deliberate: it works the same in Codex and Cursor, and no session directs another unseen.
 - **Theme palettes are AA-checked, and the dark theme has a gradient limit.** Each theme's colors were adjusted so the listed pairs reach 4.5:1 as normal text (for example the terracotta accent on the editorial background, or the mustard accent on cream); every pair is measured in the theme file, next to the value it replaced. Text cannot sit directly over the dark theme's full violet→cyan gradient, because no single text color passes on both ends.
+
+- **Apple UI styles are AA-checked, except the reference style.** Nine of the ten styles are generated from a brand hue and pushed until every reading pair (body and secondary text, text on tints, button labels) reaches 4.5:1; `check_style.py` measures them and each style file lists the ratios. `mint-studio` keeps the values of the design it was taken from, with five pairs below AA (white on the primary button, secondary text on canvas and cards, and in dark mode text on the hero card); its file says so and shows how to make an AA copy. The screenshot tour needs a UI test target and runs `xcodebuild`, so it is only as fast as the project's build.
 
 ## License
 
