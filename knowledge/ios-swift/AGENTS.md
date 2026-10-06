@@ -51,7 +51,23 @@ These apply to every project, whatever the stack.
   - Accessibility built in as you write (`accessibilityLabel`/`accessibilityHint`, Dynamic Type respected)
 - **Must never assume**:
   - That `@Observable` is available without checking the deployment target (requires iOS 17+)
-  - A visual style without checking whether the project already has its own design system
+  - A visual style without checking whether the project already has its own design system (see `professional-apple-ui`)
+
+### `professional-apple-ui`
+- **Objective**: Polished, native, consistent Apple UI: a soft card-based look from ONE of 10 styles (or a custom one) as design tokens, an HTML mockup approved before SwiftUI, and a screenshot tour looked at in light and dark before a screen counts as done. Details in `design-system/` (setup, visual system, macOS, iOS, copy and localization, review loop, one file per style).
+- **Must include**:
+  - The style recorded once per project (`UI style: <id>` in `AGENTS.md`, tokens in `docs/ui-style.json`, `Theme.swift` generated from them); every color, spacing, radius and font size from those tokens
+  - Per screen: a design brief (primary action, hierarchy, ASCII wireframe), an approved HTML mockup for a new or reworked screen, then the screenshot tour for the touched sections in light and dark, reviewed against the checklist
+  - Native structure (`NavigationSplitView`/`TabView`, `.inspector`, `Form`, `Table`/`List`, `ContentUnavailableView`, SF Symbols), one primary action per screen, confirmed destructive actions
+  - Status as a chip (tint + its own text color + symbol + word), display names for every enum, every string translated
+  - Empty, loading, error and many-items states for every screen
+- **Must never**:
+  - Build several screens in one pass, or call a screen done without looking at its screenshots
+  - Let a view overlap another or extend outside its container, in any state or language
+- **Must never assume**:
+  - A style without the project's `AGENTS.md`/`docs/ui-style.json` or the user's pick
+  - That a color pair passes contrast unless the style's file lists it as measured
+  - That a screen fits because it fits in English at the default size (check the second language, the smallest window or iPhone, the largest text size)
 
 ### `swift-testing`
 - **Objective**: Tests that use Swift Testing as the default framework.

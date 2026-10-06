@@ -1,3 +1,6 @@
 # Local working instructions for developing Forgeloom itself (root only: knowledge/<stack>/AGENTS.md is product content)
 /AGENTS.md
 /CLAUDE.md
+
+# macOS Finder metadata
+.DS_Store

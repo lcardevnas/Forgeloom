@@ -2,7 +2,7 @@
   "name": "ios-swift",
   "displayName": "Forgeloom · iOS/macOS (Swift)",
   "version": "0.2.0",
-  "description": "Skills and audit subagents for Apple projects in Swift: Swift standards, Swift 6 concurrency, SwiftUI, Swift Testing, SwiftData, async/await networking and privacy manifest; OWASP Mobile, accessibility, memory and performance reviews; secrets and dependency gate.",
+  "description": "Skills and audit subagents for Apple projects in Swift: Swift standards, Swift 6 concurrency, SwiftUI, polished Apple UI with 10 styles, mockups and a screenshot review loop, Swift Testing, SwiftData, async/await networking and privacy manifest; OWASP Mobile, accessibility, memory and performance reviews; secrets and dependency gate.",
   "author": {
     "name": "Luis Cárdenas",
     "url": "https://github.com/lcardevnas"
@@ -15,7 +15,8 @@
     "swift",
     "ios",
     "swiftui",
-    "owasp-mobile"
+    "owasp-mobile",
+    "design-system"
   ],
   "dependencies": [
     "fl"
