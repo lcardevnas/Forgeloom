@@ -17,6 +17,7 @@ If you want the knowledge to apply only when certain files are in play, map it t
 | Forgeloom source | Cursor rule | Suggested frontmatter |
 |---|---|---|
 | `knowledge/ios-swift/AGENTS.md` | `.cursor/rules/ios-swift.mdc` | `globs: "**/*.swift"`, `alwaysApply: false` |
+| `knowledge/ios-swift/design-system/styles/<style>.md` plus `visual-system.md` and `macos.md` or `ios.md` | `.cursor/rules/ios-ui.mdc` | the chosen style only; same globs as `ios-swift` (the scripts need a Forgeloom checkout) |
 | `knowledge/web/AGENTS.md` | `.cursor/rules/web.mdc` | `globs: "**/*.{html,css,js,jsx,ts,tsx}"`, `alwaysApply: false` |
 | `knowledge/web/design-system/themes/<theme>.md` | `.cursor/rules/web-theme.mdc` | the chosen theme only; same globs as `web` |
 | `knowledge/backend/AGENTS.md` | `.cursor/rules/backend.mdc` | `globs` for your backend's source folders |

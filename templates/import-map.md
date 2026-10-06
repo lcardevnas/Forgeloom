@@ -10,7 +10,7 @@ One table row per contiguous block of source lines. The columns, in order:
 - **ID**: `R1`, `R2`, ...
 - **Lines**: `N` or `N-M`, the block's lines in the source file.
 - **Section**: the source heading the block belongs to (a label for the human reader).
-- **Destination**: `<repo folder>/<path>`, relative to this file. Examples: `acme-ios/specs/login.md`, `acme-backend/docs/data-model.md`, `acme-contracts/openapi.yaml`. Leave it as `-` for `dropped`.
+- **Destination**: `<repo folder>/<path>`, relative to this file. Examples: `AcmeProductAppleApp/specs/login.md`, `AcmeProductBackend/docs/data-model.md`, `AcmeProductContracts/openapi.yaml`. Leave it as `-` for `dropped`.
 - **Treatment**:
   - `verbatim`: every line of the block appears, word for word, in the destination.
   - `openapi`: the same, inside the `description` of the matching operation or schema in `openapi.yaml`.

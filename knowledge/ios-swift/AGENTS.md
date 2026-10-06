@@ -8,6 +8,15 @@ Reading rules:
 - Before applying any rule, read from the project: Swift/iOS version (`Package.swift`, `AGENTS.md`), deployment target, and whether a `.swiftlint.yml` exists.
 - New, generalizable lessons go in `knowledge/ios-swift/patterns/` (one lesson per file).
 
+## Working rules
+
+These apply to every project, whatever the stack.
+
+- **Git flow.** Every repo uses git flow, with plain git. Right after `git init`, run `git symbolic-ref HEAD refs/heads/develop`: work starts on `develop` and the first commit is made there. `main` appears with the first release and holds released commits only, each tagged `vX.Y.Z`. After that: `feature/<name>` from `develop`, `release/X.Y.Z` for a release in flight, `hotfix/X.Y.Z` from `main` for urgent fixes; merge with `--no-ff`.
+- **Commits.** English, conventional style (`feat(scope): ...`), 2 lines at most: a subject under about 72 characters and, only if it adds something the subject cannot, one line of context. **Never** add `Co-Authored-By` or any other attribution trailer, even if a tool suggests one.
+- **Language.** Every `.md` file and every other document (specs, ADRs, READMEs, comments, OpenAPI descriptions) is written in English, whatever language the user chats in.
+- **Final summaries.** When you finish, say what changed and what needs the user's decision or review (open questions, failures, skipped steps). Go straight to the point: **never** add long explanations or re-describe features unless the user asks for them.
+
 ## Skills
 
 ### `swift-high-standard`
@@ -42,7 +51,23 @@ Reading rules:
   - Accessibility built in as you write (`accessibilityLabel`/`accessibilityHint`, Dynamic Type respected)
 - **Must never assume**:
   - That `@Observable` is available without checking the deployment target (requires iOS 17+)
-  - A visual style without checking whether the project already has its own design system
+  - A visual style without checking whether the project already has its own design system (see `professional-apple-ui`)
+
+### `professional-apple-ui`
+- **Objective**: Polished, native, consistent Apple UI: a soft card-based look from ONE of 10 styles (or a custom one) as design tokens, an HTML mockup approved before SwiftUI, and a screenshot tour looked at in light and dark before a screen counts as done. Details in `design-system/` (setup, visual system, macOS, iOS, copy and localization, review loop, one file per style).
+- **Must include**:
+  - The style recorded once per project (`UI style: <id>` in `AGENTS.md`, tokens in `docs/ui-style.json`, `Theme.swift` generated from them); every color, spacing, radius and font size from those tokens
+  - Per screen: a design brief (primary action, hierarchy, ASCII wireframe), an approved HTML mockup for a new or reworked screen, then the screenshot tour for the touched sections in light and dark, reviewed against the checklist
+  - Native structure (`NavigationSplitView`/`TabView`, `.inspector`, `Form`, `Table`/`List`, `ContentUnavailableView`, SF Symbols), one primary action per screen, confirmed destructive actions
+  - Status as a chip (tint + its own text color + symbol + word), display names for every enum, every string translated
+  - Empty, loading, error and many-items states for every screen
+- **Must never**:
+  - Build several screens in one pass, or call a screen done without looking at its screenshots
+  - Let a view overlap another or extend outside its container, in any state or language
+- **Must never assume**:
+  - A style without the project's `AGENTS.md`/`docs/ui-style.json` or the user's pick
+  - That a color pair passes contrast unless the style's file lists it as measured
+  - That a screen fits because it fits in English at the default size (check the second language, the smallest window or iPhone, the largest text size)
 
 ### `swift-testing`
 - **Objective**: Tests that use Swift Testing as the default framework.

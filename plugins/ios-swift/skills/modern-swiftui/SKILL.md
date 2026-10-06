@@ -17,7 +17,7 @@ description: Apply when writing or modifying SwiftUI views: @Observable, decompo
 ## Must never assume
 
 - That `@Observable` is available without checking the deployment target (requires iOS 17+)
-- A visual style without checking whether the project already has its own design system
+- A visual style without checking whether the project already has its own design system (for the look itself, the style and the screen workflow, use `professional-apple-ui`)
 
 ## Accumulated stack knowledge
 

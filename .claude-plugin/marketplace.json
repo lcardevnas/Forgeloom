@@ -6,19 +6,19 @@
   },
   "metadata": {
     "description": "Forgeloom: spec-driven workflow and reusable per-stack knowledge (iOS/Swift, web, backend) for AI-assisted development.",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "fl",
       "source": "./plugins/fl",
-      "description": "Workflow commands: /fl:define (charter, spec or shared spec across repos), /fl:fix (bug with root cause and regression test), /fl:promote (promote lessons to knowledge/<stack>/patterns/), /fl:import (split an existing all-in-one spec into a multi-repo project without losing text). Install it once; it is independent of the stack.",
+      "description": "Workflow commands: /fl:define (charter, spec or shared spec across repos), /fl:fix (bug with root cause and regression test), /fl:promote (promote lessons to knowledge/<stack>/patterns/), /fl:import (split an existing all-in-one spec into a multi-repo project without losing text; detects the technologies and creates one git-flow repo per technology), plus a checker for import-ready source specs. Install it once; it is independent of the stack.",
       "category": "workflow"
     },
     {
       "name": "ios-swift",
       "source": "./plugins/ios-swift",
-      "description": "Skills and subagents for iOS/macOS in Swift: Swift standards, Swift 6 concurrency, SwiftUI, Swift Testing, SwiftData, networking, privacy manifest; OWASP Mobile, accessibility, memory and performance audits.",
+      "description": "Skills and subagents for iOS/macOS in Swift: Swift standards, Swift 6 concurrency, SwiftUI, polished Apple UI with 10 styles, Swift Testing, SwiftData, networking, privacy manifest; OWASP Mobile, accessibility, memory and performance audits.",
       "category": "development"
     },
     {

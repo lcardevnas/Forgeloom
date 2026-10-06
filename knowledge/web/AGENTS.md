@@ -7,6 +7,15 @@ Reading rules:
 - Every entry has three parts: *Objective*, *Must include* (or *review*) and *Must never assume* (or *Must never*). The third part prevents filling gaps with a reasonable default that is not valid for the real project: **check against the project, do not assume**.
 - New, generalizable lessons go in `knowledge/web/patterns/` (one lesson per file).
 
+## Working rules
+
+These apply to every project, whatever the stack.
+
+- **Git flow.** Every repo uses git flow, with plain git. Right after `git init`, run `git symbolic-ref HEAD refs/heads/develop`: work starts on `develop` and the first commit is made there. `main` appears with the first release and holds released commits only, each tagged `vX.Y.Z`. After that: `feature/<name>` from `develop`, `release/X.Y.Z` for a release in flight, `hotfix/X.Y.Z` from `main` for urgent fixes; merge with `--no-ff`.
+- **Commits.** English, conventional style (`feat(scope): ...`), 2 lines at most: a subject under about 72 characters and, only if it adds something the subject cannot, one line of context. **Never** add `Co-Authored-By` or any other attribution trailer, even if a tool suggests one.
+- **Language.** Every `.md` file and every other document (specs, ADRs, READMEs, comments, OpenAPI descriptions) is written in English, whatever language the user chats in.
+- **Final summaries.** When you finish, say what changed and what needs the user's decision or review (open questions, failures, skipped steps). Go straight to the point: **never** add long explanations or re-describe features unless the user asks for them.
+
 ## Skills
 
 ### `professional-web-design`

@@ -23,7 +23,7 @@ Argument received: `$ARGUMENTS` (may be empty).
 Talk it through to close whatever is missing. Ask concrete questions, a few at a time, and do not treat anything as decided that the user has not said. If this was already discussed earlier in the conversation, do not repeat it: use it.
 
 - Case **0.2**: ground the questions in the real code (read `AGENTS.md`, the architecture and the files the feature touches). That is the advantage of defining here rather than in a separate chat. Also settle **which repos the feature needs work in** (this one only, or also the backend, the app, ...). If `AGENTS.md` has a *Related repositories* section, it tells you where the contracts repo and the sibling repos are.
-- Case **0.1**: there is no code to read; focus on technical stack, hosting/infrastructure, general architecture and planned commands (build, test, lint). Ask whether the project spans several repos (one per stack plus a contracts repo); if so, ask for the folder names, because a session in one repo has to know where the contracts repo is.
+- Case **0.1**: there is no code to read; focus on technical stack, hosting/infrastructure, general architecture and planned commands (build, test, lint). Ask whether the project spans several repos (one per stack plus a contracts repo); if so, ask for the folder names, because a session in one repo has to know where the contracts repo is. Suggest the convention `<ProjectName><Suffix>` in PascalCase, with the suffix `AppleApp`, `AndroidApp`, `Backend`, `Website` or `Contracts` (for example `AcmeProductBackend`).
 
 ## Step 2 — Write the files
 
@@ -35,10 +35,23 @@ The rule that overrides everything else: **do not add anything that was not expl
 
 Based on everything that has been discussed, generate two Markdown files:
 
-1. `AGENTS.md` at the root, with the sections **Technical stack**, **Hosting/infrastructure**, **General architecture** and **Planned commands** — only what was explicitly decided, nothing invented. If the project spans several repos, add **Related repositories**: the relative paths of the contracts repo and the sibling repos, as the user gave them. It must stay under 200 lines.
+1. `AGENTS.md` at the root, with the sections **Technical stack**, **Hosting/infrastructure**, **General architecture** and **Planned commands** — only what was explicitly decided, nothing invented. If the project spans several repos, add **Related repositories**: the relative paths of the contracts repo and the sibling repos, as the user gave them. It must stay under 200 lines. It always ends with the **Working rules** section below, word for word: it is Forgeloom's, not something the user decided and not an open question.
 2. `decisions/0001-foundation.md` as an ADR with those same stack/hosting decisions: what was chosen, which alternatives were considered if they were mentioned, and why.
 
 If anything about stack, hosting or architecture was left undecided, mark it as an "open question" in both files instead of assuming an option.
+
+#### Working rules section (goes in `AGENTS.md`)
+
+```markdown
+## Working rules
+
+These apply to every project, whatever the stack.
+
+- **Git flow.** Every repo uses git flow, with plain git. Right after `git init`, run `git symbolic-ref HEAD refs/heads/develop`: work starts on `develop` and the first commit is made there. `main` appears with the first release and holds released commits only, each tagged `vX.Y.Z`. After that: `feature/<name>` from `develop`, `release/X.Y.Z` for a release in flight, `hotfix/X.Y.Z` from `main` for urgent fixes; merge with `--no-ff`.
+- **Commits.** English, conventional style (`feat(scope): ...`), 2 lines at most: a subject under about 72 characters and, only if it adds something the subject cannot, one line of context. **Never** add `Co-Authored-By` or any other attribution trailer, even if a tool suggests one.
+- **Language.** Every `.md` file and every other document (specs, ADRs, READMEs, comments, OpenAPI descriptions) is written in English, whatever language the user chats in.
+- **Final summaries.** When you finish, say what changed and what needs the user's decision or review (open questions, failures, skipped steps). Go straight to the point: **never** add long explanations or re-describe features unless the user asks for them.
+```
 
 ### Case 0.2 — Spec
 
@@ -61,9 +74,11 @@ Take the stack and architecture already fixed in `AGENTS.md` as given; do not re
 
 ## Step 3 — Wrap up
 
+Keep it short: no re-description of what was written.
+
 1. List the **open questions** you marked for the user: it is the first thing they need to review.
 2. State which files you created and where.
 3. Case 0.1: remind them that the next step is the first feature with `/fl:define` (there will already be an `AGENTS.md`, so it will be case 0.2). If `CLAUDE.md` does not exist, suggest `ln -s AGENTS.md CLAUDE.md` so Claude Code reads the same content; do not create it yourself.
 4. Case 0.2: the next step is "implement according to `specs/<feature>.md`", with plan mode first. Tests are derived from the acceptance criteria (the `test-writer` subagent, if available, exists for that).
-   - **Shared spec**: each repo is implemented in **its own session**, opened in that repo. Give the user the exact first prompt for every repo involved, for example: "Implement according to `../acme-contracts/specs/<feature>.md`, Backend section only". Sessions do not command each other, and this session works only on this repo's group: do not edit the other repos. The feature is done when every platform group is complete, not when one is. If the other repo's work has to come first, say so.
+   - **Shared spec**: each repo is implemented in **its own session**, opened in that repo. Give the user the exact first prompt for every repo involved, for example: "Implement according to `../AcmeProductContracts/specs/<feature>.md`, Backend section only". Sessions do not command each other, and this session works only on this repo's group: do not edit the other repos. The feature is done when every platform group is complete, not when one is. If the other repo's work has to come first, say so.
 5. **Do not commit.** The files are left for the user to review.
