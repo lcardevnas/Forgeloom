@@ -19,7 +19,7 @@ Rules for mockups:
 - **Show the hard states** as extra frames or toggles: empty, error, many items, and the narrowest column.
 - **Nothing overflows,** not even by a pixel. Check every card edge at the frame's width. A button row that doesn't fit gets its fallback now (wrap, stack or a shorter label), not in SwiftUI later.
 - **Show both modes** before asking for the OK. The toggle is there for that.
-- Where a mockup and SwiftUI disagree for a good reason (a control behaves differently, a label is too long in Spanish), update the mockup to match. The mockup stays the truth.
+- A mockup settles layout, hierarchy and wording; it does not settle native rendering (system fonts, materials, control metrics, toolbar and sidebar behavior, Dynamic Type). Where the built screen differs for a native reason, the screenshot is right: keep the SwiftUI and update the mockup to match. Where it differs because the layout drifted, fix the SwiftUI.
 
 ## Demo seed
 
