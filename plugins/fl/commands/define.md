@@ -50,6 +50,8 @@ These apply to every project, whatever the stack.
 - **Git flow.** Every repo uses git flow, with plain git. Right after `git init`, run `git symbolic-ref HEAD refs/heads/develop`: work starts on `develop` and the first commit is made there. `main` appears with the first release and holds released commits only, each tagged `vX.Y.Z`. After that: `feature/<name>` from `develop`, `release/X.Y.Z` for a release in flight, `hotfix/X.Y.Z` from `main` for urgent fixes; merge with `--no-ff`.
 - **Commits.** English, conventional style (`feat(scope): ...`), 2 lines at most: a subject under about 72 characters and, only if it adds something the subject cannot, one line of context. **Never** add `Co-Authored-By` or any other attribution trailer, even if a tool suggests one.
 - **Language.** Every `.md` file and every other document (specs, ADRs, READMEs, comments, OpenAPI descriptions) is written in English, whatever language the user chats in.
+- **Cross-repo work.** If a feature needs work in another repo (an endpoint, a field or a screen on another platform), never edit that repo: create the shared spec at `<contracts>/specs/<feature>.md`, or extend the existing one, with a group for that platform, so its session finds the work there. The contracts repo comes from *Related repositories* in `AGENTS.md`; if the section is missing, ask.
+- **Next steps.** When asked what is next, read the unticked `- [ ]` items in this repo's `specs/` and in this repo's group of each spec in `<contracts>/specs/`, and report them with the open questions. If the contracts repo is not reachable, say so; never guess its location.
 - **Final summaries.** When you finish, say what changed and what needs the user's decision or review (open questions, failures, skipped steps). Go straight to the point: **never** add long explanations or re-describe features unless the user asks for them.
 ```
 
@@ -60,7 +62,7 @@ Based on everything discussed, write the spec in Markdown (use `$ARGUMENTS` as t
 - **Objective**: what problem it solves, in one sentence.
 - **Scope**: including what is explicitly out of scope.
 - **Constraints**: performance, compatibility, security.
-- **Acceptance criteria**: a verifiable checklist (`- [ ]`), every item checkable with a test or a concrete check.
+- **Acceptance criteria**: a verifiable checklist (`- [ ]`), every item checkable with a test or a concrete check. Items are ticked as they are met; a group with every box ticked is done.
 - **Relevant prior decisions**: a link to the ADR in `decisions/` if there is one.
 
 Take the stack and architecture already fixed in `AGENTS.md` as given; do not repeat or change them.
@@ -68,7 +70,7 @@ Take the stack and architecture already fixed in `AGENTS.md` as given; do not re
 **Where it goes depends on how many repos the feature needs:**
 
 - **One repo** → `specs/<feature-name>.md` in this repo.
-- **More than one repo** (for example the app needs an endpoint the backend does not have yet) → **one shared spec** at `<contracts repo>/specs/<feature-name>.md`, found through *Related repositories* in `AGENTS.md` (ask the user if that section is missing). It has the same sections, but **Acceptance criteria** is grouped under one `### <Platform>` heading per repo involved (`### iOS`, `### Backend`, ...): each group holds only what that repo must satisfy, checkable with that repo's own tests, so each repo's session can work from its group alone. If the contracts repo is outside the working directory and writing there is denied, tell the user to restart with `claude --add-dir <that folder>`; do not write the spec anywhere else.
+- **More than one repo** (for example the app needs an endpoint the backend does not have yet) → **one shared spec** at `<contracts repo>/specs/<feature-name>.md`, found through *Related repositories* in `AGENTS.md` (ask the user if that section is missing). It has the same sections, but **Acceptance criteria** is grouped under one `### <Platform>` heading per repo involved (`### iOS`, `### Backend`, ...): each group holds only what that repo must satisfy, checkable with that repo's own tests, so each repo's session can work from its group alone. This is also how another platform learns it has work: the spec is the handoff, so create it, or add the group to the existing one, before continuing. If the contracts repo is outside the working directory and writing there is denied, tell the user to restart with `claude --add-dir <that folder>`; do not write the spec anywhere else.
 
 **Contract change.** If the feature needs new or changed endpoints or payloads, propose the change to `<contracts repo>/openapi.yaml` (contract-first: the contract is updated **before** the endpoint exists). Show the proposed diff and apply it only after the user's OK. Never make an incompatible change to a published contract without a new version (`/v2/`). What was not decided (a field type, an error code) goes in as `x-open-question`, not as a guess.
 
