@@ -291,13 +291,15 @@ Every repo uses **git flow** from its first commit: `develop` is created at `git
 
 ## Working rules
 
-Four rules apply to every project, whatever the stack. They are in each stack's `AGENTS.md` (so `install.sh` brings them), and `/fl:define` and `/fl:import` write them into the `AGENTS.md` of every repo they create.
+Six rules apply to every project, whatever the stack. They are in each stack's `AGENTS.md` (so `install.sh` brings them), and `/fl:define` and `/fl:import` write them into the `AGENTS.md` of every repo they create.
 
 | Rule | What it says |
 |---|---|
 | Git flow | `develop` is created at `git init` and the first commit is made there; `feature/`, `release/` and `hotfix/` branches, merges with `--no-ff`; `main` holds tagged releases and appears with the first. |
 | Commits | English, conventional style, 2 lines at most. Never a `Co-Authored-By` or any other attribution trailer. |
 | Language | Every `.md` file and every other document is in English, whatever language you chat in. |
+| Cross-repo work | If a feature needs another repo, never edit it: create or extend the shared spec in the contracts repo with a group for that platform. |
+| Next steps | "What is next" reads the unticked acceptance criteria in this repo's specs and in its group of the contracts specs. |
 | Final summaries | What changed and what needs your decision or review, straight to the point; no long explanations unless you ask. |
 
 These are instructions the model follows, not a hook that blocks: the commit gate checks secrets and dependencies, not the commit message.
