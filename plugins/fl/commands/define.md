@@ -14,7 +14,7 @@ Argument received: `$ARGUMENTS` (may be empty).
 
 1. Go to the repo root (`git rev-parse --show-toplevel`; if it is not a git repo, the current directory).
 2. Check whether `AGENTS.md` exists at that root.
-   - **It does not exist** → case **0.1, charter** (project from scratch).
+   - **It does not exist** → case **0.1, charter** (project from scratch). If the repo already has code, suggest `/fl:init` first: it records the stack from the real code and adds the Working rules, and then `/fl:define` takes the feature path.
    - **It exists** → case **0.2, spec** (feature on an existing project). Read it in full before continuing: the stack and architecture are already decided there and are not decided again.
 3. Tell the user in one line which case you detected and why. If the user had said explicitly in the chat the opposite (e.g. "this is a new feature" with no AGENTS.md), follow what the user says and point out the inconsistency.
 
@@ -22,7 +22,7 @@ Argument received: `$ARGUMENTS` (may be empty).
 
 Talk it through to close whatever is missing. Ask concrete questions, a few at a time, and do not treat anything as decided that the user has not said. If this was already discussed earlier in the conversation, do not repeat it: use it.
 
-- Case **0.2**: ground the questions in the real code (read `AGENTS.md`, the architecture and the files the feature touches). That is the advantage of defining here rather than in a separate chat. Also settle **which repos the feature needs work in** (this one only, or also the backend, the app, ...). If `AGENTS.md` has a *Related repositories* section, it tells you where the contracts repo and the sibling repos are.
+- Case **0.2**: ground the questions in the real code (read `AGENTS.md`, the architecture and the files the feature touches). That is the advantage of defining here rather than in a separate chat. If the foundation sections of `AGENTS.md` carry `Open question:` lines (left by `/fl:init`), tell the user which ones this feature depends on and settle them first, updating that section only after their OK. Also settle **which repos the feature needs work in** (this one only, or also the backend, the app, ...). If `AGENTS.md` has a *Related repositories* section, it tells you where the contracts repo and the sibling repos are.
 - Case **0.1**: there is no code to read; focus on technical stack, hosting/infrastructure, general architecture and planned commands (build, test, lint). Ask whether the project spans several repos (one per stack plus a contracts repo); if so, ask for the folder names, because a session in one repo has to know where the contracts repo is. Suggest the convention `<ProjectName><Suffix>` in PascalCase, with the suffix `AppleApp`, `AndroidApp`, `Backend`, `Website` or `Contracts` (for example `AcmeProductBackend`).
 
 ## Step 2 — Write the files

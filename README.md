@@ -24,6 +24,7 @@ AI assistants fail in predictable ways: they start coding from a vague sentence,
 
 **Install it if you want:**
 
+- **A repo set up in one command.** `/fl:init` adds the working rules to the `AGENTS.md` you already have (or creates one from the code it finds), points `CLAUDE.md` at it, puts the repo on git flow and checks that the commit gate's tools are installed. Safe to re-run, and it never overwrites what you wrote.
 - **A written definition before any code.** `/fl:define` turns a conversation into `AGENTS.md`, a decision record or a feature spec with checkable acceptance criteria. Anything undecided is marked as an *open question*, never assumed.
 - **Bugs fixed with proof.** `/fl:fix` finds the root cause first, writes a test that fails for the bug's reason, then makes the minimal fix.
 - **Your stack's conventions applied while the code is written.** Skills for Swift 6 concurrency, SwiftUI, SwiftData, Core Web Vitals, WCAG, API contracts and more, each with a *Must never assume* part that stops the model from using a default that is wrong for your project.
@@ -61,17 +62,17 @@ claude plugin marketplace add lcardevnas/Forgeloom
 
 Or, inside Claude Code: `/plugin marketplace add lcardevnas/Forgeloom` (the repository is <https://github.com/lcardevnas/Forgeloom>).
 
-**2. Install the stack plugin** for your project. It declares the `fl` plugin as a dependency, so the commands `/fl:define`, `/fl:fix`, `/fl:promote` and `/fl:import` come with it:
+**2. Install the stack plugin** for your project. It declares the `fl` plugin as a dependency, so the commands `/fl:init`, `/fl:define`, `/fl:fix`, `/fl:promote` and `/fl:import` come with it:
 
 ```bash
 claude plugin install ios-swift@forgeloom --scope project   # or: web, backend
 ```
 
-**3. Verify**: open Claude Code in the repo and run `/fl:define`. Commands always carry the plugin name (`/fl:...`), whatever stack plugin is installed next to it.
+**3. Set the repo up**: open Claude Code in the repo and run `/fl:init`. The plugin itself writes nothing into your repo, so this is the step that adds the working rules to your `AGENTS.md`. Commands always carry the plugin name (`/fl:...`), whatever stack plugin is installed next to it. See [Adopt Forgeloom in an existing repo](#adopt-forgeloom-in-an-existing-repo).
 
 | Plugin | Gives you |
 |---|---|
-| `fl` | The commands `/fl:define`, `/fl:fix`, `/fl:promote`, `/fl:import` and the scripts that check a source spec and verify an import. Independent of the stack, so the command names never change with the stack you install. |
+| `fl` | The commands `/fl:init`, `/fl:define`, `/fl:fix`, `/fl:promote`, `/fl:import` and the scripts that check a source spec and verify an import. Independent of the stack, so the command names never change with the stack you install. |
 | `ios-swift` | (installs `fl` too) 8 skills (with 10 UI styles), 4 audit subagents, 3 shared subagents, the commit gate. |
 | `web` | (installs `fl` too) 4 skills (with 4 design themes), 4 audit subagents, 3 shared subagents, the commit gate. |
 | `backend` | (installs `fl` too) 4 skills, 2 audit subagents, 3 shared subagents, the commit gate. |
@@ -79,6 +80,19 @@ claude plugin install ios-swift@forgeloom --scope project   # or: web, backend
 Use `--scope project` for the stack plugin so your team gets it through the project's `.claude/settings.json`. Install **one stack plugin per repo**: the shared subagents and the gate are bundled in each stack plugin, so installing several in the same project duplicates them (see [Known limits](#known-limits)).
 
 `fl` is a separate plugin on purpose: a plugin's commands are always invoked as `/<plugin-name>:<command>`, so if the commands lived inside a stack plugin they would be `/ios-swift:define` in one project and `/web:define` in another. You can also install it alone, at user scope, to have the commands everywhere: `claude plugin install fl@forgeloom`.
+
+### Update
+
+Installed plugins are copies, so new commands, rules and skills reach you only when you update. Update the marketplace first, then each plugin you use, and restart Claude Code:
+
+```bash
+claude plugin marketplace update forgeloom
+claude plugin update fl@forgeloom --scope project
+claude plugin update ios-swift@forgeloom --scope project   # or: web, backend
+claude plugin list                                         # check the versions
+```
+
+Use the scope you installed with (`--scope user` for `fl` if you installed it there). Then run `/fl:init` again in each repo: it compares the working rules in your `AGENTS.md` with the ones in the new version and offers only the difference, so a repo set up with an older release picks up new rules without losing anything of yours. A release that adds or changes commands, rules or skills is described in its tag message (`git tag -n99 vX.Y.Z`, or the [Tags](https://github.com/lcardevnas/Forgeloom/tags) page).
 
 ## Getting started
 
@@ -113,7 +127,7 @@ Most prompts are *closing* prompts: you talk first, then paste them and they sum
 
 **Step 3. Put the files in a repo and start coding**, depending on what you defined:
 
-- **A single project (charter) or a feature (spec).** Move the files into the repo, install the stack plugin ([Install](#install)), open Claude Code **in that repo** and start with `Implement according to specs/<feature>.md` in plan mode. For a new project, define the first feature next with `/fl:define <feature>` or paste `chat-to-spec.md` again.
+- **A single project (charter) or a feature (spec).** Move the files into the repo, install the stack plugin ([Install](#install)), open Claude Code **in that repo**, run `/fl:init` (it keeps the `AGENTS.md` you brought and only completes what it lacks) and start with `Implement according to specs/<feature>.md` in plan mode. For a new project, define the first feature next with `/fl:define <feature>` or paste `chat-to-spec.md` again.
 - **A multi-platform product (source spec).** Save `source-spec.md` in an empty folder (the umbrella) and check its shape:
 
   ```bash
@@ -140,12 +154,36 @@ Install the plugins first ([Install](#install)), then open Claude Code **in the 
 
 | Situation | Run | You get | Do next |
 |---|---|---|---|
+| Existing repo with code, first time | `/fl:init` | The working rules in `AGENTS.md` (created from the code if missing), `CLAUDE.md`, `develop` | Review the open questions, then define a feature |
 | Empty repo, new project | `/fl:define my-project` | `AGENTS.md` + `decisions/0001-foundation.md` | Review open questions, then define the first feature |
 | Repo with `AGENTS.md`, new feature | `/fl:define feature-name` | `specs/feature-name.md` | Plan mode: `Implement according to specs/feature-name.md` |
 | A bug | `/fl:fix "symptom"` or `/fl:fix bugs/123.md` | Root cause, red test, minimal fix | Review, commit with the test |
 | Building or restyling a SwiftUI screen | ask for the screen (see below) | Brief, mockup, code, screenshots | Approve the mockup, review the screenshots |
 | A big all-in-one spec file | `/fl:import source-spec.md` in the umbrella folder | One repo per platform | Review the map and open questions |
 | A lesson that generalizes | `/fl:promote` | A staged pattern file | You make the commit |
+
+#### Adopt Forgeloom in an existing repo
+
+```text
+/fl:init
+```
+
+Run it once per repo, after installing the plugins. It starts read-only: it looks at your branch, `AGENTS.md`, `CLAUDE.md`, the manifests that show the stack, the enabled plugins and the tools the commit gate needs, and tells you what it found before asking anything. Then, depending on what is there:
+
+| What it finds | What it does |
+|---|---|
+| Code and **no `AGENTS.md`** | Creates one with the stack and the commands that your manifests state (each with its source file), `Open question:` for hosting and architecture, and the working rules. It never infers architecture from folder names. |
+| An `AGENTS.md` **without the working rules** (hand-written, from another tool, or from an older Forgeloom) | Appends the section, or adds only the missing rules, and shows you the difference where a rule differs from yours. It never reorders or edits anything else, and it reports a conflict (for example a rule that asks for `Co-Authored-By`) instead of resolving it. |
+| An `AGENTS.md` that came from a chat (`chat-to-charter.md`) | Keeps it as is and only verifies the rules. |
+| A real `CLAUDE.md` and no `AGENTS.md` | Leaves your file alone and, with your OK, appends one line `@AGENTS.md` so Claude Code loads both. |
+| No `CLAUDE.md` | Creates it as a link to `AGENTS.md`. |
+| A repo on `main` with history and no `develop` | Offers `git switch -c develop` and says what it means: the history stays, `main` is not touched, releases start being tagged from the next one. |
+| No code and no `AGENTS.md` (a brand-new project) | Only sets up git flow; `/fl:define my-project` writes the charter and the rules together. |
+| A folder with a `source-spec.md`, or several repos side by side | Stops and points you to `/fl:import`, or to running `/fl:init` inside each repo. |
+
+It also tells you, with the exact command and without running it, if the stack plugin is not installed for the repo, if two are, or if `git`, `curl` or `jq` (or `python3` for iOS) is missing. It asks before every write, never commits or installs, and a second run changes nothing. For a multi-repo project, run it in each repo, the contracts repo included.
+
+**Next:** `/fl:define <feature>`. If `AGENTS.md` has `Open question:` lines in its foundation sections, `/fl:define` raises the ones that feature depends on and closes them with you first.
 
 #### New project
 
@@ -233,6 +271,7 @@ If the source came from the `chat-to-source-spec.md` interview, `/fl:import` run
 | Step | Claude Code | Codex | Cursor / others |
 |---|---|---|---|
 | Get the stack knowledge | `claude plugin install <stack>@forgeloom` | `./install.sh <stack> <project>`; Codex reads `AGENTS.md` natively | `./install.sh <stack> <project>`; Cursor reads `AGENTS.md` natively |
+| Set an existing repo up (working rules, `CLAUDE.md`, git flow) | `/fl:init` | paste `prompts/init-repo.md` | paste `prompts/init-repo.md` |
 | New-project charter | `/fl:define` | paste `prompts/chat-to-charter.md` | paste `prompts/chat-to-charter.md` |
 | Feature spec | `/fl:define feature-name` | paste `prompts/chat-to-spec.md` | paste `prompts/chat-to-spec.md` |
 | Bug | `/fl:fix "..."` | paste `prompts/chat-to-bug.md`, then ask for root cause before any fix, a red test, then a minimal fix | same as Codex |
@@ -291,7 +330,7 @@ Every repo uses **git flow** from its first commit: `develop` is created at `git
 
 ## Working rules
 
-Six rules apply to every project, whatever the stack. They are in each stack's `AGENTS.md` (so `install.sh` brings them), and `/fl:define` and `/fl:import` write them into the `AGENTS.md` of every repo they create.
+Six rules apply to every project, whatever the stack. They are in each stack's `AGENTS.md` (so `install.sh` brings them), `/fl:define` and `/fl:import` write them into the `AGENTS.md` of every repo they create, and `/fl:init` adds or updates them in a repo that already exists.
 
 | Rule | What it says |
 |---|---|
@@ -355,7 +394,7 @@ forgeloom/
 │   ├── skills/dependency-scan/
 │   └── hooks/                        # hooks.json, pre-commit-gate.sh, secret-scan.sh, dependency-scan.sh
 ├── plugins/
-│   ├── fl/                           # commands (define, fix, promote, import) + scripts/{import-check,source-check}.sh
+│   ├── fl/                           # commands (init, define, fix, promote, import) + scripts/{import-check,source-check}.sh
 │   ├── ios-swift/  web/  backend/    # per-stack skills + subagents; shared pieces symlinked from common/
 ├── prompts/                          # prompts for chat: closing prompts, plus the opening chat-to-source-spec
 ├── templates/                        # adr.md, pattern.md, import-map.md
@@ -380,6 +419,7 @@ Behaviors that were verified against a real install and are worth knowing:
 - **`/fl:import` runs from the umbrella folder.** The source and the map live there, and the repos are created inside it, so no `--add-dir` is needed. If you run it from inside one repo instead, start the session with `claude --add-dir ..`; the command never copies the source into a repo. `/fl:define` writing a shared spec in a sibling contracts repo still needs the sibling folder added.
 - **`/fl:import` decides the repos from the spec.** Technologies and the `Contracts` repo are inferred from what the source says, and you approve them before anything is created. Two projects of the same technology (two backends) and technologies outside the naming table are asked, not guessed. `AndroidApp` gets a folder but has no Forgeloom stack yet.
 - **The English rule and word-for-word import can collide.** A non-English source stays as written (translating would fail the check); the command reports it and leaves the translation to you.
+- **`/fl:init` records facts, it does not decide.** It reads manifests and scripts, never folder names, so a stack it cannot read from a file stays an `Open question` and a `package.json` that could be a front end or a server is asked, not guessed. It has not been tested against every project layout; read the proposed `AGENTS.md` before accepting it. The Working rules text it writes is copied from the command itself, so a repo set up with an older release keeps its older rules until you update the plugin and run `/fl:init` again.
 - **The working rules are instructions, not enforcement.** Nothing blocks a `Co-Authored-By` trailer or a first commit on another branch; the commit gate checks secrets and dependencies only.
 - **The OpenAPI conversion keeps the source text but does not fill gaps.** Each operation carries its source lines verbatim in `description`; types, required fields, status codes and auth that the source never states are left empty and marked `x-open-question`. The result is a skeleton the contract review must complete, not a finished contract. The lint checks structure (valid YAML and OpenAPI, no dangling `$ref`), not style completeness: Redocly's `recommended` rules (servers, security, summaries, operationIds) would demand facts the source never states, so they are off by default; set `FL_IMPORT_LINT_CMD` for a stricter ruleset. The linter is required and is not bundled.
 - **Sessions do not talk to each other.** A session that needs work in another repo leaves it in the contracts repo (shared spec and `openapi.yaml`) and you start the other repo's session. This is deliberate: it works the same in Codex and Cursor, and no session directs another unseen.
